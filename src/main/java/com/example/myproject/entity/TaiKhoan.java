@@ -1,0 +1,36 @@
+package com.example.myproject.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "TaiKhoan")
+public class TaiKhoan {
+    @Id
+    @Column(name = "MaTK")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer maTK;
+
+    @Column(name = "Username", nullable = false, length = 50, unique = true)
+    @NotBlank(message = "Tên đăng nhập không được để trống")
+    private String username;
+
+    @Column(name = "Password", nullable = false, length = 200)
+    @NotBlank(message = "Mật khẩu không được để trống")
+    private String password;
+
+    @Column(name = "LoaiTK", nullable = false, length = 20)
+    @NotBlank(message = "Loại tài khoản không được để trống")
+    private String loaiTK;
+
+    @ManyToOne
+    @JoinColumn(name = "MaQuyen", nullable = false)
+    @NotNull(message = "Quyền không được để trống")
+    private Quyen quyen;
+
+}
