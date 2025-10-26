@@ -28,4 +28,6 @@ public interface GiangVienRepository extends JpaRepository<GiangVien, String> {
     Optional<GiangVien> findByTaiKhoan_MaTK(Integer maTK);
 
     boolean existsByTaiKhoan_MaTK(Integer maTK);
+    @Query("SELECT gv FROM GiangVien gv WHERE gv.taiKhoan.username = :username")
+    Optional<GiangVien> findByTaiKhoanUsername(@Param("username") String username);
 }

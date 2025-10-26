@@ -1,10 +1,11 @@
+<html lang="zxx" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <div class="quixnav" th:fragment="sidebar">
     <div class="quixnav-scroll">
         <ul class="metismenu" id="menu">
-            <li class="nav-label">Quản lí</li>
-            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
+            <li class="nav-label" sec:authorize="hasRole('ADMIN')">Quản lí</li>
+            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false" sec:authorize="hasRole('ADMIN')"><i
                         class="icon icon-form"></i><span class="nav-text">Quản lí</span></a>
-                        <ul aria-expanded="false">
+                        <ul aria-expanded="false" sec:authorize="hasRole('ADMIN')">
                             <li><a th:href="@{/students}" >Quản lí sinh viên</a></li>
                             <li><a th:href="@{/lecturers}" >Quản lí giảng viên</a></li>
                             <li><a th:href="@{/employees}" >Quản lí nhân viên</a></li>

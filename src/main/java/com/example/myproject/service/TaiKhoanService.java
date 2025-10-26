@@ -1,12 +1,14 @@
 package com.example.myproject.service;
 
 import com.example.myproject.entity.TaiKhoan;
+import com.example.myproject.dto.DoiMatKhauRequest;
 import com.example.myproject.entity.Quyen;
 import com.example.myproject.repository.TaiKhoanRepository;
 import com.example.myproject.repository.QuyenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ public class TaiKhoanService {
 
     @Autowired
     private QuyenRepository quyenRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Page<TaiKhoan> listAll(Pageable pageable, String keyword) {
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -109,5 +113,21 @@ public class TaiKhoanService {
 
     public boolean existsById(Integer maTK) {
         return taiKhoanRepository.existsById(maTK);
+    }
+    public boolean doiMatKhau(String username, DoiMatKhauRequest request) {
+        TaiKhoan taiKhoan = taiKhoanRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), taiKhoan.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu cũ không đúng");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới không khớp");
+        }
+
+        taiKhoan.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        taiKhoanRepository.save(taiKhoan);
+        return true;
     }
 }

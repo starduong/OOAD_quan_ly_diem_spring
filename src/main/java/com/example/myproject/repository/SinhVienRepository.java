@@ -22,5 +22,7 @@ public interface SinhVienRepository extends JpaRepository<SinhVien, String> {
     Optional<SinhVien> findByTaiKhoan_MaTK(Integer maTK);
 
     boolean existsByTaiKhoan_MaTK(Integer maTK);
+    @Query("SELECT sv FROM SinhVien sv WHERE sv.taiKhoan.username = :username")
+    Optional<SinhVien> findByTaiKhoanUsername(@Param("username") String username);
 
 }

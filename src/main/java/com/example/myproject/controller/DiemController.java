@@ -12,17 +12,23 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 /**
  * Controller xử lý chức năng nhập điểm cho giảng viên
  */
 @Controller
-@RequestMapping("/giang-vien")
+@RequestMapping("/client/gv/nhapDiem")
 @RequiredArgsConstructor
 public class DiemController {
 
     private final CapNhatDiemService capNhatDiemService;
-
+    @GetMapping("")
+    public String nhapDiem() {
+        return "client/gv/nhapDiem";
+    }
+    
     /**
      * Hiển thị form nhập điểm cho lớp tín chỉ
      * GET /giang-vien/nhap-diem/{maLopTC}
@@ -36,7 +42,7 @@ public class DiemController {
             model.addAttribute("classData", classData);
             model.addAttribute("scoreUpdate", new ScoreUpdateDTO());
             
-            return "gv/nhapDiem"; // Template: templates/gv/nhapDiem.html
+            return "client/gv/nhapDiem"; 
             
         } catch (Exception e) {
             model.addAttribute("error", "Lỗi: " + e.getMessage());

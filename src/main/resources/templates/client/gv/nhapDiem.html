@@ -1,10 +1,14 @@
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{gv/layout/main}">
+<html lang="zxx">
 <head>
-    <title>Nhập Điểm Thi</title>
-    <style>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="Orbitor,business,company,agency,modern,bootstrap4,tech,software">
+  <meta name="author" content="themefisher.com">
+
+  <title>Quản lý đề tài</title>
+  <th:block th:replace="~{client/layout/header :: headContent}"></th:block>
+      <style>
         .score-table {
             width: 100%;
             border-collapse: collapse;
@@ -88,7 +92,12 @@
         }
     </style>
 </head>
-<body>
+
+<body id="top">
+<!-- Tiêm header -->
+<div th:replace="~{client/layout/header :: header}"></div>
+
+<!-- Main Content -->
 <div layout:fragment="content">
     <div class="container-fluid">
         <h2>📝 Nhập Điểm Thi</h2>
@@ -305,5 +314,9 @@
         /*]]>*/
     </script>
 </div>
+
+<!-- Tiêm footer -->
+<div th:replace="~{client/layout/footer :: footer}"></div>
+<th:block th:replace="~{client/layout/footer :: scriptContent}"></th:block>
 </body>
 </html>

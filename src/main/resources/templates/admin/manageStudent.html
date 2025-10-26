@@ -239,66 +239,7 @@
         </div>
     </div>
     <div th:replace="~{admin/layout/footer :: footer}" id="footer-include"></div>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        let showEditModal = /*[[${showEditModal}]]*/ false;
-        let isEditMode = /*[[${editStudent?.maSV != null}]]*/ false;
-    
-        document.addEventListener("DOMContentLoaded", function () {
-            const modal = document.getElementById("studentModal");
-    
-            // Nếu cần hiển thị modal chỉnh sửa
-            if (showEditModal === true) {
-                modal.classList.remove("hidden");
-                if (isEditMode) {
-                document.getElementById("modalTitle").textContent = "Sửa thông tin sinh viên";
-                } else {
-                    document.getElementById("modalTitle").textContent = "Thêm sinh viên";
-                }
-            }
-    
-            // Mở modal khi bấm nút "Thêm sinh viên"
-            const addBtn = document.getElementById("addBtn");
-            if (addBtn) {
-                addBtn.addEventListener("click", function () {
-                    // Nút này giờ đã là link đến /students/new nên không cần xử lý JavaScript nữa
-                });
-            }
-    
-            // Đóng modal khi bấm ra ngoài
-            modal.addEventListener("click", function (e) {
-                if (e.target === modal) {
-                    modal.classList.add("hidden");
-                }
-            });
-    
-            // Đóng modal khi bấm ESC
-            document.addEventListener("keydown", function (e) {
-                if (e.key === "Escape") {
-                    modal.classList.add("hidden");
-                }
-            });
-    
-            // Đóng modal khi bấm nút "X"
-            const closeModal = document.getElementById("closeModal");
-            if (closeModal) {
-                closeModal.addEventListener("click", function () {
-                    modal.classList.add("hidden");
-                });
-            }
-    
-            // Đóng modal khi bấm nút "Hủy"
-            const cancelBtn = document.getElementById("cancelBtn");
-            if (cancelBtn) {
-                cancelBtn.addEventListener("click", function () {
-                    modal.classList.add("hidden");
-                });
-            }
-        });
-        /*]]>*/
-    </script>
-    
-    
+
     <script th:src="@{/admin/vendor/global/global.min.js}"></script>
     <script th:src="@{/admin/js/quixnav-init.js}"></script>
     <script th:src="@{/admin/js/custom.min.js}"></script>
