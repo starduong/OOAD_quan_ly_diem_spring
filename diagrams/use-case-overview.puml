@@ -1,0 +1,133 @@
+@startuml use-case-overview
+title Use Case Diagram - Hệ thống Quản lý Điểm
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Giảng Viên" as GV
+actor "Sinh Viên" as SV
+actor "Nhân Viên" as NV
+actor "Admin" as AD
+actor "Email System" as Email
+
+rectangle "Hệ thống Quản lý Điểm" {
+    ' Use cases cho Giảng Viên
+    package "Quản lý Điểm" {
+        usecase "UC1: Cập nhật điểm thi" as UC1
+        usecase "UC2: Xem điểm lớp" as UC2
+        usecase "UC3: Xuất báo cáo điểm" as UC3
+    }
+    
+    ' Use cases cho Sinh Viên
+    package "Tra cứu" {
+        usecase "UC4: Xem điểm cá nhân" as UC4
+        usecase "UC5: Xem lịch sử học tập" as UC5
+        usecase "UC6: Tải bảng điểm" as UC6
+    }
+    
+    ' Use cases cho Nhân Viên
+    package "Quản lý Thông tin" {
+        usecase "UC7: Quản lý sinh viên" as UC7
+        usecase "UC8: Quản lý giảng viên" as UC8
+        usecase "UC9: Quản lý môn học" as UC9
+        usecase "UC10: Quản lý lớp tín chỉ" as UC10
+    }
+    
+    ' Use cases cho Admin
+    package "Quản trị Hệ thống" {
+        usecase "UC11: Quản lý tài khoản" as UC11
+        usecase "UC12: Phân quyền" as UC12
+        usecase "UC13: Xem log hệ thống" as UC13
+    }
+    
+    ' Use cases chung
+    package "Xác thực" {
+        usecase "UC14: Đăng nhập" as UC14
+        usecase "UC15: Đổi mật khẩu" as UC15
+        usecase "UC16: Quên mật khẩu" as UC16
+    }
+    
+    ' Use cases background
+    usecase "UC17: Gửi thông báo email" as UC17
+    usecase "UC18: Validate dữ liệu" as UC18
+}
+
+' Relationships - Giảng Viên
+GV --> UC1
+GV --> UC2
+GV --> UC3
+GV --> UC14
+
+' Relationships - Sinh Viên
+SV --> UC4
+SV --> UC5
+SV --> UC6
+SV --> UC14
+
+' Relationships - Nhân Viên
+NV --> UC7
+NV --> UC8
+NV --> UC9
+NV --> UC10
+NV --> UC14
+
+' Relationships - Admin
+AD --> UC11
+AD --> UC12
+AD --> UC13
+AD --> UC14
+
+' Relationships - All users
+GV --> UC15
+SV --> UC15
+NV --> UC15
+AD --> UC15
+
+GV --> UC16
+SV --> UC16
+NV --> UC16
+AD --> UC16
+
+' Include relationships
+UC1 .> UC18 : <<include>>
+UC7 .> UC18 : <<include>>
+UC8 .> UC18 : <<include>>
+UC9 .> UC18 : <<include>>
+
+UC1 .> UC17 : <<include>>
+UC16 .> UC17 : <<include>>
+
+' Extend relationships
+UC4 ..> UC6 : <<extend>>
+
+' Email system
+UC17 --> Email
+
+note right of UC1
+  **Mô tả:** Giảng viên nhập/cập nhật
+  điểm thành phần và điểm thi cho 
+  sinh viên trong lớp tín chỉ
+  
+  **Actors:** Giảng Viên, Email System
+  
+  **Precondition:** 
+  - Giảng viên đã đăng nhập
+  - Phụ trách lớp tín chỉ
+  
+  **Postcondition:**
+  - Điểm được lưu vào database
+  - Sinh viên nhận email thông báo
+end note
+
+note bottom of UC14
+  Tất cả users phải
+  đăng nhập trước khi
+  sử dụng hệ thống
+end note
+
+note top of UC17
+  Background service
+  gửi email tự động
+end note
+
+@enduml

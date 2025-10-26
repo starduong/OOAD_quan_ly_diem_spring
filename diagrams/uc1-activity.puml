@@ -1,0 +1,49 @@
+@startuml uc1-activity
+title Activity Diagram - Quy trình cập nhật điểm thi
+
+start
+
+:Giảng viên đăng nhập hệ thống;
+
+:Chọn menu "Nhập điểm";
+
+:Hệ thống hiển thị danh sách\nlớp tín chỉ phụ trách;
+
+:Chọn lớp tín chỉ cần nhập điểm;
+
+:Hệ thống load danh sách sinh viên\nvà cấu trúc điểm môn học;
+
+partition "Nhập điểm cho từng sinh viên" {
+    :Nhập điểm CC, BT, GK, Thi;
+    
+    if (Điểm hợp lệ (0-10)?) then (Có)
+        :Lưu điểm vào BangDiem;
+        
+        :Tạo bản ghi CapNhatDiem\n(lưu lịch sử, DiemThi);
+        
+        :Tính điểm tổng kết theo hệ số;
+        
+        if (Điểm đầy đủ?) then (Có)
+            :Gửi thông báo email\ncho sinh viên;
+        else (Chưa)
+            :Chỉ lưu điểm thành phần;
+        endif
+        
+        :Hiển thị "Cập nhật thành công";
+        
+    else (Không)
+        :Hiển thị lỗi\n"Điểm phải từ 0-10";
+        
+        :Yêu cầu nhập lại;
+    endif
+}
+
+if (Còn sinh viên chưa nhập?) then (Có)
+    backward:Tiếp tục nhập;
+else (Không)
+    :Hoàn thành nhập điểm lớp;
+endif
+
+stop
+
+@enduml

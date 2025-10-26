@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{gv/layout/main}">
+<head>
+    <title>Nhập Điểm Thi</title>
+    <style>
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .score-table th, .score-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        .score-table th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        .score-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .score-input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .score-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        .btn-update {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-update:hover {
+            background-color: #45a049;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .class-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .class-info h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .score-structure {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .score-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .invalid-input {
+            border-color: #dc3545 !important;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <h2>📝 Nhập Điểm Thi</h2>
+
+        <!-- Thông báo -->
+        <div th:if="${success}" class="alert alert-success">
+            <strong>✓ Thành công!</strong> <span th:text="${success}"></span>
+            <span th:if="${finalScore}">
+                Điểm trung bình: <strong th:text="${#numbers.formatDecimal(finalScore, 1, 2)}"></strong>
+            </span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            <strong>✗ Lỗi!</strong> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Thông tin lớp -->
+        <div class="class-info" th:if="${classData}">
+            <h3 th:text="${classData.lopTinChi.maLopTC} + ' - ' + ${classData.monHoc.tenMon}"></h3>
+            <p><strong>Mã môn:</strong> <span th:text="${classData.monHoc.maMon}"></span></p>
+            <p><strong>Giảng viên:</strong> <span th:text="${classData.lopTinChi.giangVien.ho + ' ' + classData.lopTinChi.giangVien.ten}"></span></p>
+            <p><strong>Học kỳ:</strong> <span th:text="${classData.lopTinChi.hocKi}"></span></p>
+
+            <!-- Cấu trúc điểm -->
+            <div class="score-structure">
+                <div class="score-item">
+                    <strong>Chuyên cần:</strong> 
+                    <span th:text="${#numbers.formatPercent(classData.monHoc.heSoCC, 0, 0)}"></span>
+                </div>
+                <div class="score-item">
+                    <strong>Bài tập:</strong> 
+                    <span th:text="${#numbers.formatPercent(classData.monHoc.heSoBT, 0, 0)}"></span>
+                </div>
+                <div class="score-item">
+                    <strong>Giữa kỳ:</strong> 
+                    <span th:text="${#numbers.formatPercent(classData.monHoc.heSoGK, 0, 0)}"></span>
+                </div>
+                <div class="score-item">
+                    <strong>Cuối kỳ:</strong> 
+                    <span th:text="${#numbers.formatPercent(classData.monHoc.heSoCK, 0, 0)}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng nhập điểm -->
+        <table class="score-table" th:if="${classData}">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>MSSV</th>
+                    <th>Họ và Tên</th>
+                    <th>Điểm CC</th>
+                    <th>Điểm BT</th>
+                    <th>Điểm GK</th>
+                    <th>Điểm Thi</th>
+                    <th>Điểm TB</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="student, iterStat : ${classData.students}">
+                    <td th:text="${iterStat.count}"></td>
+                    <td th:text="${student.sinhVien.maSV}"></td>
+                    <td th:text="${student.sinhVien.ho + ' ' + student.sinhVien.ten}"></td>
+                    
+                    <!-- Form nhập điểm cho từng sinh viên -->
+                    <td>
+                        <input type="number" 
+                               class="score-input" 
+                               th:id="'diemCC-' + ${student.sinhVien.maSV}"
+                               th:value="${student.bangDiem.diemCC}"
+                               step="0.01" 
+                               min="0" 
+                               max="10" 
+                               placeholder="0-10">
+                    </td>
+                    <td>
+                        <input type="number" 
+                               class="score-input" 
+                               th:id="'diemBT-' + ${student.sinhVien.maSV}"
+                               th:value="${student.bangDiem.diemBT}"
+                               step="0.01" 
+                               min="0" 
+                               max="10" 
+                               placeholder="0-10">
+                    </td>
+                    <td>
+                        <input type="number" 
+                               class="score-input" 
+                               th:id="'diemGK-' + ${student.sinhVien.maSV}"
+                               th:value="${student.bangDiem.diemGK}"
+                               step="0.01" 
+                               min="0" 
+                               max="10" 
+                               placeholder="0-10">
+                    </td>
+                    <td>
+                        <input type="number" 
+                               class="score-input" 
+                               th:id="'diemThi-' + ${student.sinhVien.maSV}"
+                               step="0.01" 
+                               min="0" 
+                               max="10" 
+                               placeholder="0-10">
+                    </td>
+                    <td>
+                        <strong th:if="${student.diemTB != null}" 
+                                th:text="${#numbers.formatDecimal(student.diemTB, 1, 2)}">
+                        </strong>
+                        <span th:unless="${student.diemTB != null}">--</span>
+                    </td>
+                    <td>
+                        <button class="btn-update" 
+                                th:attr="data-masv=${student.sinhVien.maSV}"
+                                onclick="updateScore(this.getAttribute('data-masv'))">
+                            💾 Lưu
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const maLopTC = /*[[${classData?.lopTinChi?.maLopTC}]]*/ '';
+
+        function updateScore(maSV) {
+            // Lấy giá trị điểm từ form
+            const diemCC = parseFloat(document.getElementById('diemCC-' + maSV).value);
+            const diemBT = parseFloat(document.getElementById('diemBT-' + maSV).value);
+            const diemGK = parseFloat(document.getElementById('diemGK-' + maSV).value);
+            const diemThi = parseFloat(document.getElementById('diemThi-' + maSV).value);
+
+            // Validate điểm
+            if (!validateScores(diemCC, diemBT, diemGK, diemThi, maSV)) {
+                return;
+            }
+
+            // Tạo form để submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/giang-vien/update-score';
+
+            // Add CSRF token (nếu có)
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            
+            if (csrfToken && csrfHeader) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+
+            // Add form fields
+            addHiddenField(form, 'maSV', maSV);
+            addHiddenField(form, 'maLopTC', maLopTC);
+            addHiddenField(form, 'diemCC', diemCC);
+            addHiddenField(form, 'diemBT', diemBT);
+            addHiddenField(form, 'diemGK', diemGK);
+            addHiddenField(form, 'diemThi', diemThi);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function addHiddenField(form, name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        function validateScores(diemCC, diemBT, diemGK, diemThi, maSV) {
+            const scores = [
+                { value: diemCC, name: 'Chuyên cần', id: 'diemCC-' + maSV },
+                { value: diemBT, name: 'Bài tập', id: 'diemBT-' + maSV },
+                { value: diemGK, name: 'Giữa kỳ', id: 'diemGK-' + maSV },
+                { value: diemThi, name: 'Thi', id: 'diemThi-' + maSV }
+            ];
+
+            let isValid = true;
+
+            for (const score of scores) {
+                const input = document.getElementById(score.id);
+                input.classList.remove('invalid-input');
+
+                if (isNaN(score.value) || score.value < 0 || score.value > 10) {
+                    input.classList.add('invalid-input');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                alert('⚠ Điểm không hợp lệ! Tất cả điểm phải từ 0 đến 10.');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Auto-remove alert sau 5 giây
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>

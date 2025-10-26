@@ -1,0 +1,70 @@
+@startuml
+title Sequence Diagram - UC1: Cập nhật điểm thi
+
+actor "Giảng Viên" as GV
+participant "Web UI" as UI
+participant "Authentication\nService" as Auth
+participant "CapNhatDiem\nService" as Service
+participant "Validation\nUtil" as Valid
+participant "Database" as DB
+participant "Notification\nService" as Notify
+participant "Email System" as Email
+
+GV -> UI : 1. Đăng nhập (username, password)
+UI -> Auth : authenticate(username, password)
+Auth -> DB : SELECT * FROM TaiKhoan\nWHERE Username = ?
+DB --> Auth : TaiKhoan data
+Auth -> DB : SELECT * FROM GiangVien\nWHERE MaTK = ?
+DB --> Auth : GiangVien data
+Auth --> UI : token, MaGV
+UI --> GV : Hiển thị trang chủ
+
+GV -> UI : 2. Chọn "Nhập điểm"
+UI --> GV : Hiển thị danh sách lớp tín chỉ
+
+GV -> UI : 3. Chọn lớp tín chỉ (MaLopTC)
+UI -> Service : getLopTinChi(MaLopTC)
+Service -> DB : SELECT * FROM LopTinChi\nWHERE MaLopTC = ?
+DB --> Service : LopTinChi info
+Service -> DB : SELECT MH.* FROM MonHoc MH\nWHERE MH.MaMon = LopTC.MaMon
+DB --> Service : MonHoc (HeSoCC, HeSoBT, HeSoGK, HeSoCK)
+Service -> DB : SELECT SV.*, BD.*\nFROM BangDiem BD\nJOIN SinhVien SV ON BD.MaSV = SV.MaSV\nWHERE BD.MaLopTC = ?
+DB --> Service : Danh sách sinh viên và điểm hiện tại
+Service --> UI : ClassScoreData{students[], scoreStructure}
+UI --> GV : Hiển thị bảng nhập điểm
+
+GV -> UI : 4. Nhập điểm cho sinh viên\n(MaSV, DiemCC, DiemBT, DiemGK, DiemThi)
+
+UI -> Valid : validateScore(DiemCC, DiemBT, DiemGK, DiemThi)
+Valid --> UI : ValidationResult{isValid, message}
+
+alt Điểm hợp lệ (0-10)
+    UI -> Service : updateScore(MaLopTC, MaSV, DiemCC, DiemBT, DiemGK, DiemThi, MaNV)
+    Service -> DB : SELECT IdBangDiem FROM BangDiem\nWHERE MaSV = ? AND MaLopTC = ?
+    DB --> Service : IdBangDiem
+    
+    Service -> DB : UPDATE BangDiem\nSET DiemCC = ?, DiemBT = ?, DiemGK = ?\nWHERE IdBangDiem = ?
+    
+    Service -> DB : INSERT INTO CapNhatDiem\n(MaNV, IdBangDiem, NgayNhap, DiemThi)
+    DB --> Service : Success
+    
+    Service -> Service : calculateFinalScore(DiemCC, DiemBT, DiemGK, DiemThi, HeSo)
+    note right
+      DiemTB = DiemCC * HeSoCC + DiemBT * HeSoBT 
+             + DiemGK * HeSoGK + DiemThi * HeSoCK
+    end note
+    
+    Service -> Notify : sendScoreNotification(MaSV, MaMon, DiemTB)
+    Notify -> DB : SELECT Email FROM SinhVien WHERE MaSV = ?
+    DB --> Notify : Email address
+    Notify -> Email : sendEmail(toEmail, subject, body)
+    Email --> Notify : Sent
+    
+    Service --> UI : UpdateSuccess{finalScore}
+    UI --> GV : Hiển thị "Cập nhật thành công"
+    
+else Điểm không hợp lệ
+    UI --> GV : Hiển thị lỗi "Điểm phải từ 0-10"
+end
+
+@enduml

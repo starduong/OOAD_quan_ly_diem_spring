@@ -1,0 +1,9 @@
+
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   ⚠️  WARNING: DEVELOPMENT MODE - SECURITY DISABLED!  ⚠️     ║
+║                                                               ║
+║   Authentication is BYPASSED for debugging                    ║
+║   DO NOT USE IN PRODUCTION!                                   ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝

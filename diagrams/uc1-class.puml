@@ -1,0 +1,254 @@
+@startuml uc1-class
+title Class Diagram - UC1: Cập nhật điểm thi
+
+' ============= ENTITY CLASSES =============
+package "Entity Layer" {
+    class TaiKhoan {
+        - IdTaiKhoan: int
+        - Username: String
+        - Password: String
+        - MaQuyen: int
+        - Email: String
+        + authenticate(): boolean
+    }
+
+    class GiangVien {
+        - MaGV: int
+        - MaTK: int
+        - HoTen: String
+        - NgaySinh: Date
+        - SDT: String
+        - GioiTinh: String
+        - DiaChi: String
+        - MaKhoa: int
+        + getLopTinChiPhuTrach(): List<LopTinChi>
+    }
+
+    class SinhVien {
+        - MaSV: int
+        - MaTK: int
+        - HoTen: String
+        - NgaySinh: Date
+        - SDT: String
+        - GioiTinh: String
+        - DiaChi: String
+        - MaLop: int
+        + getEmail(): String
+    }
+
+    class LopTinChi {
+        - MaLopTC: int
+        - MaMon: int
+        - MaGV: int
+        - HocKy: int
+        - NamHoc: int
+        - SoLuongSV: int
+        + getDanhSachSinhVien(): List<SinhVien>
+    }
+
+    class MonHoc {
+        - MaMon: int
+        - TenMon: String
+        - SoTinChi: int
+        - HeSoCC: float
+        - HeSoBT: float
+        - HeSoGK: float
+        - HeSoCK: float
+        + getScoreStructure(): ScoreStructure
+    }
+
+    class BangDiem {
+        - IdBangDiem: int
+        - MaSV: int
+        - MaLopTC: int
+        - DiemCC: Float
+        - DiemBT: Float
+        - DiemGK: Float
+        + calculateFinalScore(diemThi: Float): Float
+        + isComplete(): boolean
+    }
+
+    class CapNhatDiem {
+        - IdCapNhat: int
+        - MaNV: int
+        - IdBangDiem: int
+        - NgayNhap: DateTime
+        - DiemThi: Float
+        + getUpdateHistory(): List<CapNhatDiem>
+    }
+
+    class NhanVien {
+        - MaNV: int
+        - MaTK: int
+        - HoTen: String
+        - SDT: String
+    }
+}
+
+' ============= SERVICE CLASSES =============
+package "Service Layer" {
+    class AuthenticationService {
+        + authenticate(username: String, password: String): AuthToken
+        + getGiangVienByToken(token: String): GiangVien
+    }
+
+    class CapNhatDiemService {
+        - bangDiemRepo: BangDiemRepository
+        - capNhatDiemRepo: CapNhatDiemRepository
+        - monHocRepo: MonHocRepository
+        - notificationService: NotificationService
+        + getLopTinChi(maLopTC: int): ClassScoreData
+        + updateScore(scoreUpdate: ScoreUpdateDTO): UpdateResult
+        - calculateFinalScore(scores: ScoreData, heSo: ScoreStructure): Float
+        + getScoreHistory(idBangDiem: int): List<CapNhatDiem>
+    }
+
+    class NotificationService {
+        - emailService: EmailService
+        + sendScoreNotification(maSV: int, maMon: int, diemTB: Float): void
+        - buildEmailContent(student: SinhVien, subject: MonHoc, score: Float): String
+    }
+
+    class ValidationUtil {
+        + validateScore(diem: Float): ValidationResult
+        + validateScoreRange(diem: Float, min: Float, max: Float): boolean
+        + isComplete(bangDiem: BangDiem): boolean
+    }
+}
+
+' ============= REPOSITORY CLASSES =============
+package "Repository Layer" {
+    interface BangDiemRepository {
+        + findById(id: int): BangDiem
+        + findByMaSVAndMaLopTC(maSV: int, maLopTC: int): BangDiem
+        + save(bangDiem: BangDiem): BangDiem
+        + updateScores(idBangDiem: int, scores: ScoreData): int
+    }
+
+    interface CapNhatDiemRepository {
+        + save(capNhatDiem: CapNhatDiem): CapNhatDiem
+        + findByIdBangDiem(idBangDiem: int): List<CapNhatDiem>
+    }
+
+    interface MonHocRepository {
+        + findById(maMon: int): MonHoc
+    }
+
+    interface LopTinChiRepository {
+        + findById(maLopTC: int): LopTinChi
+        + findByMaGV(maGV: int): List<LopTinChi>
+    }
+
+    interface SinhVienRepository {
+        + findById(maSV: int): SinhVien
+        + findByLopTinChi(maLopTC: int): List<SinhVien>
+    }
+}
+
+' ============= CONTROLLER CLASSES =============
+package "Controller Layer" {
+    class DiemController {
+        - capNhatDiemService: CapNhatDiemService
+        - authService: AuthenticationService
+        + showScoreInput(maLopTC: int): ModelAndView
+        + updateScore(scoreUpdateDTO: ScoreUpdateDTO): ResponseEntity
+        + getScoreHistory(idBangDiem: int): ResponseEntity
+    }
+}
+
+' ============= DTO CLASSES =============
+package "DTO Layer" {
+    class ScoreUpdateDTO {
+        + maLopTC: int
+        + maSV: int
+        + diemCC: Float
+        + diemBT: Float
+        + diemGK: Float
+        + diemThi: Float
+        + maNV: int
+    }
+
+    class ClassScoreData {
+        + lopTinChi: LopTinChi
+        + monHoc: MonHoc
+        + students: List<StudentScoreDTO>
+        + scoreStructure: ScoreStructure
+    }
+
+    class StudentScoreDTO {
+        + sinhVien: SinhVien
+        + bangDiem: BangDiem
+        + diemTB: Float
+    }
+
+    class ValidationResult {
+        + isValid: boolean
+        + message: String
+    }
+
+    class UpdateResult {
+        + success: boolean
+        + finalScore: Float
+        + message: String
+    }
+
+    class ScoreStructure {
+        + heSoCC: float
+        + heSoBT: float
+        + heSoGK: float
+        + heSoCK: float
+    }
+}
+
+' ============= RELATIONSHIPS =============
+
+' Entity relationships
+TaiKhoan "1" -- "0..1" GiangVien
+TaiKhoan "1" -- "0..1" SinhVien
+TaiKhoan "1" -- "0..1" NhanVien
+GiangVien "1" -- "0..*" LopTinChi : phụ trách
+MonHoc "1" -- "0..*" LopTinChi : được mở
+LopTinChi "1" -- "0..*" BangDiem : có
+SinhVien "1" -- "0..*" BangDiem : có điểm
+BangDiem "1" -- "0..*" CapNhatDiem : lịch sử
+NhanVien "1" -- "0..*" CapNhatDiem : thực hiện
+
+' Service dependencies
+CapNhatDiemService --> BangDiemRepository
+CapNhatDiemService --> CapNhatDiemRepository
+CapNhatDiemService --> MonHocRepository
+CapNhatDiemService --> NotificationService
+CapNhatDiemService --> ValidationUtil
+NotificationService --> SinhVienRepository
+AuthenticationService --> GiangVien
+
+' Controller dependencies
+DiemController --> CapNhatDiemService
+DiemController --> AuthenticationService
+DiemController ..> ScoreUpdateDTO : uses
+DiemController ..> ClassScoreData : returns
+DiemController ..> UpdateResult : returns
+
+' Service uses DTOs
+CapNhatDiemService ..> ScoreUpdateDTO : receives
+CapNhatDiemService ..> ClassScoreData : creates
+CapNhatDiemService ..> UpdateResult : returns
+ValidationUtil ..> ValidationResult : returns
+
+note right of CapNhatDiemService
+  Core business logic:
+  - Validate điểm (0-10)
+  - Update BangDiem
+  - Create CapNhatDiem record
+  - Calculate final score
+  - Send notification
+end note
+
+note right of BangDiem
+  DiemTB = DiemCC * HeSoCC 
+         + DiemBT * HeSoBT
+         + DiemGK * HeSoGK 
+         + DiemThi * HeSoCK
+end note
+
+@enduml
